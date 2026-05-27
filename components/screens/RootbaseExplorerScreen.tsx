@@ -8,6 +8,7 @@ import { FileTree } from "@/components/file-explorer/FileTree";
 import { FileViewer } from "@/components/file-explorer/FileViewer";
 import { FindResults } from "@/components/file-explorer/FindResults";
 import { executeFilesystemCommand, getFilesystemSnapshot } from "@/web/filesystem/api";
+import { getBaseName, getParentPath, joinUiPath, resolveUiPath } from "@/web/filesystem/pathHelpers";
 import type { FileSystemSnapshot, FilesystemCommand, SearchResult } from "@/web/filesystem/types";
 
 export function RootbaseExplorerScreen() {
@@ -18,6 +19,7 @@ export function RootbaseExplorerScreen() {
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string>();
+  const currentCwd = snapshot?.cwd ?? "/";
 
   const loadSnapshot = useCallback(async () => {
     setLoading(true);
@@ -102,9 +104,78 @@ export function RootbaseExplorerScreen() {
       const result = await runCommand(command);
       if (result) {
         setFindResults([]);
+        if (selectedFilePath && !treeContainsPath(result.snapshot.tree, selectedFilePath)) {
+          setSelectedFilePath(undefined);
+          setFileContent("");
+        }
       }
     },
-    [runCommand],
+    [runCommand, selectedFilePath],
+  );
+
+  const renameItem = useCallback(
+    async (sourcePath: string, newName: string) => {
+      const trimmedSource = sourcePath.trim();
+      const trimmedName = newName.trim();
+
+      if (!trimmedSource || !trimmedName) {
+        setError("Rename requires a source path and new name.");
+        return;
+      }
+
+      if (trimmedName.includes("/")) {
+        setError('New name must not include "/".');
+        return;
+      }
+
+      const targetPath = joinUiPath(getParentPath(trimmedSource, currentCwd), trimmedName);
+      await mutate({ command: "move", payload: { sourcePath: trimmedSource, targetPath } });
+    },
+    [currentCwd, mutate],
+  );
+
+  const moveToDirectory = useCallback(
+    async (sourcePath: string, destinationDirectory: string) => {
+      const trimmedSource = sourcePath.trim();
+      const trimmedDestination = destinationDirectory.trim();
+
+      if (!trimmedSource || !trimmedDestination) {
+        setError("Move to directory requires a source path and destination directory.");
+        return;
+      }
+
+      const sourceName = getBaseName(resolveUiPath(trimmedSource, currentCwd));
+      if (!sourceName) {
+        setError("Source path must name a file or directory.");
+        return;
+      }
+
+      const targetPath = joinUiPath(resolveUiPath(trimmedDestination, currentCwd), sourceName);
+      await mutate({ command: "move", payload: { sourcePath: trimmedSource, targetPath } });
+    },
+    [currentCwd, mutate],
+  );
+
+  const copyToDirectory = useCallback(
+    async (sourcePath: string, destinationDirectory: string) => {
+      const trimmedSource = sourcePath.trim();
+      const trimmedDestination = destinationDirectory.trim();
+
+      if (!trimmedSource || !trimmedDestination) {
+        setError("Copy to directory requires a source path and destination directory.");
+        return;
+      }
+
+      const sourceName = getBaseName(resolveUiPath(trimmedSource, currentCwd));
+      if (!sourceName) {
+        setError("Source path must name a file or directory.");
+        return;
+      }
+
+      const targetPath = joinUiPath(resolveUiPath(trimmedDestination, currentCwd), sourceName);
+      await mutate({ command: "copy", payload: { sourcePath: trimmedSource, targetPath } });
+    },
+    [currentCwd, mutate],
   );
 
   const deleteFile = useCallback(
@@ -180,8 +251,13 @@ export function RootbaseExplorerScreen() {
           onTouch={(path) => void mutate({ command: "touch", payload: { path } })}
           onRmdir={(path) => void mutate({ command: "rmdir", payload: { path } })}
           onDeleteFile={(path) => void deleteFile(path)}
-          onMove={(sourcePath, targetPath) => void mutate({ command: "move", payload: { sourcePath, targetPath } })}
-          onCopy={(sourcePath, targetPath) => void mutate({ command: "copy", payload: { sourcePath, targetPath } })}
+          onRename={(sourcePath, newName) => void renameItem(sourcePath, newName)}
+          onMoveToDirectory={(sourcePath, destinationDirectory) =>
+            void moveToDirectory(sourcePath, destinationDirectory)
+          }
+          onCopyToDirectory={(sourcePath, destinationDirectory) =>
+            void copyToDirectory(sourcePath, destinationDirectory)
+          }
           onFind={(name, startPath) => {
             void runCommand({ command: "find", payload: { name, startPath } }).then((result) => {
               if (result?.results) {

@@ -12,8 +12,9 @@ interface FileActionsPanelProps {
   onTouch: (path: string) => void;
   onRmdir: (path: string) => void;
   onDeleteFile: (path: string) => void;
-  onMove: (sourcePath: string, targetPath: string) => void;
-  onCopy: (sourcePath: string, targetPath: string) => void;
+  onRename: (sourcePath: string, newName: string) => void;
+  onMoveToDirectory: (sourcePath: string, destinationDirectory: string) => void;
+  onCopyToDirectory: (sourcePath: string, destinationDirectory: string) => void;
   onFind: (name: string, startPath?: string) => void;
 }
 
@@ -23,8 +24,9 @@ export function FileActionsPanel({
   onTouch,
   onRmdir,
   onDeleteFile,
-  onMove,
-  onCopy,
+  onRename,
+  onMoveToDirectory,
+  onCopyToDirectory,
   onFind,
 }: FileActionsPanelProps) {
   const [mkdirPath, setMkdirPath] = useState("");
@@ -32,10 +34,12 @@ export function FileActionsPanel({
   const [filePath, setFilePath] = useState("");
   const [removePath, setRemovePath] = useState("");
   const [removeFilePath, setRemoveFilePath] = useState("");
+  const [renameSource, setRenameSource] = useState("");
+  const [renameName, setRenameName] = useState("");
   const [moveSource, setMoveSource] = useState("");
-  const [moveTarget, setMoveTarget] = useState("");
+  const [moveDestination, setMoveDestination] = useState("");
   const [copySource, setCopySource] = useState("");
-  const [copyTarget, setCopyTarget] = useState("");
+  const [copyDestination, setCopyDestination] = useState("");
   const [findName, setFindName] = useState("");
   const [findStart, setFindStart] = useState("");
 
@@ -119,25 +123,42 @@ export function FileActionsPanel({
         </form>
 
         <PathPairForm
-          title="Move or rename"
-          source={moveSource}
-          target={moveTarget}
-          action="mv"
+          title="Rename"
+          sourceLabel="Source path"
+          targetLabel="New name"
+          source={renameSource}
+          target={renameName}
+          action="rename"
           pending={pending}
-          onSourceChange={setMoveSource}
-          onTargetChange={setMoveTarget}
-          onSubmit={() => onMove(moveSource, moveTarget)}
+          onSourceChange={setRenameSource}
+          onTargetChange={setRenameName}
+          onSubmit={() => onRename(renameSource, renameName)}
         />
 
         <PathPairForm
-          title="Copy"
+          title="Move to directory"
+          sourceLabel="Source path"
+          targetLabel="Destination directory"
+          source={moveSource}
+          target={moveDestination}
+          action="mv"
+          pending={pending}
+          onSourceChange={setMoveSource}
+          onTargetChange={setMoveDestination}
+          onSubmit={() => onMoveToDirectory(moveSource, moveDestination)}
+        />
+
+        <PathPairForm
+          title="Copy to directory"
+          sourceLabel="Source path"
+          targetLabel="Destination directory"
           source={copySource}
-          target={copyTarget}
+          target={copyDestination}
           action="cp"
           pending={pending}
           onSourceChange={setCopySource}
-          onTargetChange={setCopyTarget}
-          onSubmit={() => onCopy(copySource, copyTarget)}
+          onTargetChange={setCopyDestination}
+          onSubmit={() => onCopyToDirectory(copySource, copyDestination)}
         />
 
         <form
@@ -168,6 +189,8 @@ export function FileActionsPanel({
 
 interface PathPairFormProps {
   title: string;
+  sourceLabel: string;
+  targetLabel: string;
   source: string;
   target: string;
   action: string;
@@ -179,6 +202,8 @@ interface PathPairFormProps {
 
 function PathPairForm({
   title,
+  sourceLabel,
+  targetLabel,
   source,
   target,
   action,
@@ -197,8 +222,18 @@ function PathPairForm({
     >
       <Label>{title}</Label>
       <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-        <Input aria-label={`${title} source`} value={source} onChange={(event) => onSourceChange(event.target.value)} />
-        <Input aria-label={`${title} target`} value={target} onChange={(event) => onTargetChange(event.target.value)} />
+        <Input
+          aria-label={sourceLabel}
+          placeholder={sourceLabel}
+          value={source}
+          onChange={(event) => onSourceChange(event.target.value)}
+        />
+        <Input
+          aria-label={targetLabel}
+          placeholder={targetLabel}
+          value={target}
+          onChange={(event) => onTargetChange(event.target.value)}
+        />
         <Button type="submit" disabled={pending || source.length === 0 || target.length === 0}>
           {action}
         </Button>
