@@ -54,6 +54,7 @@ export function DirectoryEntries({
                   <button
                     key={entry.path}
                     type="button"
+                    data-testid={`directory-entry-${entry.path}`}
                     className={[
                       "flex w-full items-center gap-3 px-2 py-3 text-left text-sm hover:bg-muted",
                       isActive ? "bg-muted" : "",

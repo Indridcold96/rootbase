@@ -68,6 +68,8 @@ export function FileExplorerShell({
               </Button>
               <ConfirmActionDialog
                 triggerLabel="Reset with sample"
+                triggerTestId="sample-button"
+                confirmTestId="sample-confirm-button"
                 title="Reset with sample filesystem?"
                 description="This replaces the in-memory filesystem state for this server process with a sample tree. This does not affect your real disk."
                 actionLabel="Reset with sample"
@@ -76,6 +78,8 @@ export function FileExplorerShell({
               />
               <ConfirmActionDialog
                 triggerLabel="Reset"
+                triggerTestId="reset-button"
+                confirmTestId="reset-confirm-button"
                 title="Reset filesystem?"
                 description="This clears the in-memory filesystem state for this server process. This does not affect your real disk."
                 actionLabel="Reset filesystem"
@@ -109,6 +113,8 @@ export function FileExplorerShell({
 
 interface ConfirmActionDialogProps {
   triggerLabel: string;
+  triggerTestId: string;
+  confirmTestId: string;
   title: string;
   description: string;
   actionLabel: string;
@@ -119,6 +125,8 @@ interface ConfirmActionDialogProps {
 
 function ConfirmActionDialog({
   triggerLabel,
+  triggerTestId,
+  confirmTestId,
   title,
   description,
   actionLabel,
@@ -129,7 +137,12 @@ function ConfirmActionDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button type="button" variant={variant === "destructive" ? "destructive" : "outline"} disabled={disabled}>
+        <Button
+          type="button"
+          variant={variant === "destructive" ? "destructive" : "outline"}
+          disabled={disabled}
+          data-testid={triggerTestId}
+        >
           {triggerLabel}
         </Button>
       </DialogTrigger>
@@ -145,7 +158,12 @@ function ConfirmActionDialog({
             </Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button type="button" variant={variant === "destructive" ? "destructive" : "default"} onClick={onConfirm}>
+            <Button
+              type="button"
+              variant={variant === "destructive" ? "destructive" : "default"}
+              onClick={onConfirm}
+              data-testid={confirmTestId}
+            >
               {actionLabel}
             </Button>
           </DialogClose>

@@ -78,8 +78,13 @@ export function FileActionsPanel({
         >
           <Label htmlFor="mkdir-path">Create directory</Label>
           <div className="flex gap-2">
-            <Input id="mkdir-path" value={mkdirPath} onChange={(event) => setMkdirPath(event.target.value)} />
-            <Button type="submit" disabled={pending || mkdirPath.length === 0}>
+            <Input
+              id="mkdir-path"
+              value={mkdirPath}
+              onChange={(event) => setMkdirPath(event.target.value)}
+              data-testid="create-directory-input"
+            />
+            <Button type="submit" disabled={pending || mkdirPath.length === 0} data-testid="create-directory-button">
               mkdir
             </Button>
           </div>
@@ -98,8 +103,13 @@ export function FileActionsPanel({
         >
           <Label htmlFor="touch-path">Create file</Label>
           <div className="flex gap-2">
-            <Input id="touch-path" value={filePath} onChange={(event) => setFilePath(event.target.value)} />
-            <Button type="submit" disabled={pending || filePath.length === 0}>
+            <Input
+              id="touch-path"
+              value={filePath}
+              onChange={(event) => setFilePath(event.target.value)}
+              data-testid="create-file-input"
+            />
+            <Button type="submit" disabled={pending || filePath.length === 0} data-testid="create-file-button">
               touch
             </Button>
           </div>
@@ -114,8 +124,18 @@ export function FileActionsPanel({
         >
           <Label htmlFor="remove-path">Remove empty directory</Label>
           <div className="flex gap-2">
-            <Input id="remove-path" value={removePath} onChange={(event) => setRemovePath(event.target.value)} />
-            <Button type="submit" variant="destructive" disabled={pending || removePath.length === 0}>
+            <Input
+              id="remove-path"
+              value={removePath}
+              onChange={(event) => setRemovePath(event.target.value)}
+              data-testid="remove-directory-input"
+            />
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={pending || removePath.length === 0}
+              data-testid="remove-directory-button"
+            >
               rmdir
             </Button>
           </div>
@@ -135,8 +155,14 @@ export function FileActionsPanel({
               value={removeFilePath}
               onChange={(event) => setRemoveFilePath(event.target.value)}
               placeholder="file path"
+              data-testid="remove-file-input"
             />
-            <Button type="submit" variant="destructive" disabled={pending || removeFilePath.length === 0}>
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={pending || removeFilePath.length === 0}
+              data-testid="remove-file-button"
+            >
               rm
             </Button>
           </div>
@@ -153,6 +179,9 @@ export function FileActionsPanel({
           onSourceChange={setRenameSource}
           onTargetChange={setRenameName}
           onSubmit={() => onRename(renameSource, renameName)}
+          sourceTestId="rename-source-input"
+          targetTestId="rename-name-input"
+          buttonTestId="rename-button"
         />
 
         <PathPairForm
@@ -166,6 +195,9 @@ export function FileActionsPanel({
           onSourceChange={setMoveSource}
           onTargetChange={setMoveDestination}
           onSubmit={() => onMoveToDirectory(moveSource, moveDestination)}
+          sourceTestId="move-source-input"
+          targetTestId="move-destination-input"
+          buttonTestId="move-button"
         />
 
         <PathPairForm
@@ -179,6 +211,9 @@ export function FileActionsPanel({
           onSourceChange={setCopySource}
           onTargetChange={setCopyDestination}
           onSubmit={() => onCopyToDirectory(copySource, copyDestination)}
+          sourceTestId="copy-source-input"
+          targetTestId="copy-destination-input"
+          buttonTestId="copy-button"
         />
 
         <form
@@ -190,14 +225,19 @@ export function FileActionsPanel({
         >
           <Label htmlFor="find-name">Find by exact name</Label>
           <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-            <Input id="find-name" value={findName} onChange={(event) => setFindName(event.target.value)} />
+            <Input
+              id="find-name"
+              value={findName}
+              onChange={(event) => setFindName(event.target.value)}
+              data-testid="find-name-input"
+            />
             <Input
               aria-label="Find start path"
               value={findStart}
               onChange={(event) => setFindStart(event.target.value)}
               placeholder="start path"
             />
-            <Button type="submit" disabled={pending || findName.length === 0}>
+            <Button type="submit" disabled={pending || findName.length === 0} data-testid="find-button">
               find
             </Button>
           </div>
@@ -218,6 +258,9 @@ interface PathPairFormProps {
   onSourceChange: (value: string) => void;
   onTargetChange: (value: string) => void;
   onSubmit: () => void;
+  sourceTestId: string;
+  targetTestId: string;
+  buttonTestId: string;
 }
 
 function PathPairForm({
@@ -231,6 +274,9 @@ function PathPairForm({
   onSourceChange,
   onTargetChange,
   onSubmit,
+  sourceTestId,
+  targetTestId,
+  buttonTestId,
 }: PathPairFormProps) {
   return (
     <form
@@ -247,14 +293,16 @@ function PathPairForm({
           placeholder={sourceLabel}
           value={source}
           onChange={(event) => onSourceChange(event.target.value)}
+          data-testid={sourceTestId}
         />
         <Input
           aria-label={targetLabel}
           placeholder={targetLabel}
           value={target}
           onChange={(event) => onTargetChange(event.target.value)}
+          data-testid={targetTestId}
         />
-        <Button type="submit" disabled={pending || source.length === 0 || target.length === 0}>
+        <Button type="submit" disabled={pending || source.length === 0 || target.length === 0} data-testid={buttonTestId}>
           {action}
         </Button>
       </div>

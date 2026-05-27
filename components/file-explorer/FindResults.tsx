@@ -33,6 +33,7 @@ export function FindResults({ results, hasSearched, onDirectorySelect, onFileSel
                 <button
                   key={result.path}
                   type="button"
+                  data-testid={`find-result-${result.path}`}
                   className="flex w-full items-center gap-3 px-2 py-2 text-left text-sm hover:bg-muted"
                   onClick={() =>
                     result.type === "directory" ? onDirectorySelect(result.path) : onFileSelect(result.path)

@@ -81,6 +81,18 @@ npm run test:watch
 Runs Vitest in watch mode.
 
 ```bash
+npm run test:e2e
+```
+
+Runs the Playwright browser smoke test.
+
+```bash
+npm run test:e2e:ui
+```
+
+Runs Playwright in UI mode.
+
+```bash
 npm run demo:core
 ```
 
@@ -257,4 +269,18 @@ Run all tests with:
 
 ```bash
 npm test
+```
+
+## Optional E2E Smoke Test
+
+Install the Chromium browser used by Playwright:
+
+```bash
+npx playwright install chromium
+```
+
+Then run the browser smoke test:
+
+```bash
+npm run test:e2e
 ```

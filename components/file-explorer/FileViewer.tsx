@@ -35,12 +35,13 @@ export function FileViewer({
           onChange={(event) => onContentChange(event.target.value)}
           className="min-h-36 font-mono"
           disabled={!selectedFilePath || pending}
+          data-testid="file-editor"
         />
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={onRead} disabled={!selectedFilePath || pending}>
             Read
           </Button>
-          <Button type="button" onClick={onWrite} disabled={!selectedFilePath || pending}>
+          <Button type="button" onClick={onWrite} disabled={!selectedFilePath || pending} data-testid="write-file-button">
             Write
           </Button>
         </div>
