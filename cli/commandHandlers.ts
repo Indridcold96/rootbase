@@ -85,6 +85,14 @@ const commandHandlers: Record<string, CliCommandHandler> = {
         return stay("");
       }),
   },
+  rm: {
+    usage: "Usage: rm <path>",
+    execute: (state, args) =>
+      withExactArgs(args, "Usage: rm <path>", 1, ([path]) => {
+        state.fs.deleteFile(path);
+        return stay("");
+      }),
+  },
   touch: {
     usage: "Usage: touch <path>",
     execute: (state, args) =>

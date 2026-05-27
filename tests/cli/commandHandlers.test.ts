@@ -11,6 +11,7 @@ describe("executeCommand", () => {
     const output = run("help");
 
     expect(output).toContain("Available commands:");
+    expect(output).toContain("rm <path>");
     expect(output).toContain("Navigation examples:");
   });
 
@@ -68,6 +69,31 @@ describe("executeCommand", () => {
     expect(run("write notes.txt hello from rootbase", state)).toBe("");
 
     expect(run("read notes.txt", state)).toBe("hello from rootbase");
+  });
+
+  it("removes files with rm", () => {
+    const state = createCliState();
+
+    run("touch notes.txt", state);
+    expect(run("ls", state)).toContain("/notes.txt");
+    expect(run("rm notes.txt", state)).toBe("");
+
+    expect(run("ls", state)).toBe("(empty)");
+  });
+
+  it("validates rm arguments strictly", () => {
+    const state = createCliState();
+
+    expect(run("rm", state)).toBe("Usage: rm <path>");
+    expect(run("rm a b", state)).toBe("Usage: rm <path>");
+  });
+
+  it("returns a clean error when rm targets a directory", () => {
+    const state = createCliState();
+
+    run("mkdir school", state);
+
+    expect(run("rm school", state)).toContain("Error:");
   });
 
   it("prints tree output from the real filesystem state", () => {

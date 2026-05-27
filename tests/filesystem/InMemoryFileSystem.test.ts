@@ -77,6 +77,32 @@ describe("InMemoryFileSystem", () => {
       expect(() => fs.touch("school")).toThrow(NodeAlreadyExistsError);
       expect(() => fs.writeFile("missing.txt", "content")).toThrow(NodeNotFoundError);
     });
+
+    it("deletes an existing file and removes it from directory listings", () => {
+      const fs = new InMemoryFileSystem();
+
+      fs.touch("notes.txt");
+      fs.touch("keep.txt");
+      fs.deleteFile("notes.txt");
+
+      expect(fs.ls().map((entry) => entry.name)).toEqual(["keep.txt"]);
+      expect(() => fs.readFile("notes.txt")).toThrow(NodeNotFoundError);
+    });
+
+    it("throws when deleting a missing file", () => {
+      const fs = new InMemoryFileSystem();
+
+      expect(() => fs.deleteFile("missing.txt")).toThrow(NodeNotFoundError);
+    });
+
+    it("does not delete directories through deleteFile", () => {
+      const fs = new InMemoryFileSystem();
+
+      fs.mkdir("school");
+
+      expect(() => fs.deleteFile("school")).toThrow(NotAFileError);
+      expect(fs.ls()).toEqual([{ name: "school", type: "directory", path: "/school" }]);
+    });
   });
 
   describe("path behavior", () => {

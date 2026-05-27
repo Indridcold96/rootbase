@@ -61,4 +61,13 @@ describe("filesystemService", () => {
     ]);
     expect(result.snapshot.cwd).toBe("/");
   });
+
+  it("deletes files through the service and returns an updated snapshot", () => {
+    executeFilesystemCommand({ command: "touch", payload: { path: "/notes.txt" } });
+
+    const result = executeFilesystemCommand({ command: "deleteFile", payload: { path: "/notes.txt" } });
+
+    expect(result.snapshot.entries).toEqual([]);
+    expect(result.snapshot.tree.children).toEqual([]);
+  });
 });

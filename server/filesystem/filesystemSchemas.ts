@@ -16,6 +16,10 @@ export const filesystemCommandSchema = z.discriminatedUnion("command", [
     payload: z.object({ path: stringPath }),
   }),
   z.object({
+    command: z.literal("deleteFile"),
+    payload: z.object({ path: stringPath }),
+  }),
+  z.object({
     command: z.literal("touch"),
     payload: z.object({ path: stringPath }),
   }),

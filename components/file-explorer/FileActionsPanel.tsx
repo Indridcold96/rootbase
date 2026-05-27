@@ -11,6 +11,7 @@ interface FileActionsPanelProps {
   onMkdir: (path: string, recursive: boolean) => void;
   onTouch: (path: string) => void;
   onRmdir: (path: string) => void;
+  onDeleteFile: (path: string) => void;
   onMove: (sourcePath: string, targetPath: string) => void;
   onCopy: (sourcePath: string, targetPath: string) => void;
   onFind: (name: string, startPath?: string) => void;
@@ -21,6 +22,7 @@ export function FileActionsPanel({
   onMkdir,
   onTouch,
   onRmdir,
+  onDeleteFile,
   onMove,
   onCopy,
   onFind,
@@ -29,6 +31,7 @@ export function FileActionsPanel({
   const [recursive, setRecursive] = useState(false);
   const [filePath, setFilePath] = useState("");
   const [removePath, setRemovePath] = useState("");
+  const [removeFilePath, setRemoveFilePath] = useState("");
   const [moveSource, setMoveSource] = useState("");
   const [moveTarget, setMoveTarget] = useState("");
   const [copySource, setCopySource] = useState("");
@@ -90,6 +93,27 @@ export function FileActionsPanel({
             <Input id="remove-path" value={removePath} onChange={(event) => setRemovePath(event.target.value)} />
             <Button type="submit" variant="destructive" disabled={pending || removePath.length === 0}>
               rmdir
+            </Button>
+          </div>
+        </form>
+
+        <form
+          className="space-y-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onDeleteFile(removeFilePath);
+          }}
+        >
+          <Label htmlFor="remove-file-path">Remove file</Label>
+          <div className="flex gap-2">
+            <Input
+              id="remove-file-path"
+              value={removeFilePath}
+              onChange={(event) => setRemoveFilePath(event.target.value)}
+              placeholder="file path"
+            />
+            <Button type="submit" variant="destructive" disabled={pending || removeFilePath.length === 0}>
+              rm
             </Button>
           </div>
         </form>

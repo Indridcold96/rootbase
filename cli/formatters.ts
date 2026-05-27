@@ -13,6 +13,7 @@ ls [path]
 cd <path>
 mkdir <path> [--recursive]
 rmdir <path>
+rm <path>
 touch <path>
 write <path> <content...>
 read <path>

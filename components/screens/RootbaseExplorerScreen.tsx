@@ -107,6 +107,20 @@ export function RootbaseExplorerScreen() {
     [runCommand],
   );
 
+  const deleteFile = useCallback(
+    async (path: string) => {
+      const result = await runCommand({ command: "deleteFile", payload: { path } });
+      if (result) {
+        setFindResults([]);
+        if (selectedFilePath && !treeContainsPath(result.snapshot.tree, selectedFilePath)) {
+          setSelectedFilePath(undefined);
+          setFileContent("");
+        }
+      }
+    },
+    [runCommand, selectedFilePath],
+  );
+
   const reset = useCallback(async () => {
     const result = await runCommand({ command: "clear" });
     if (result) {
@@ -165,6 +179,7 @@ export function RootbaseExplorerScreen() {
           onMkdir={(path, recursive) => void mutate({ command: "mkdir", payload: { path, recursive } })}
           onTouch={(path) => void mutate({ command: "touch", payload: { path } })}
           onRmdir={(path) => void mutate({ command: "rmdir", payload: { path } })}
+          onDeleteFile={(path) => void deleteFile(path)}
           onMove={(sourcePath, targetPath) => void mutate({ command: "move", payload: { sourcePath, targetPath } })}
           onCopy={(sourcePath, targetPath) => void mutate({ command: "copy", payload: { sourcePath, targetPath } })}
           onFind={(name, startPath) => {
@@ -215,4 +230,12 @@ function readError(error: unknown): string {
   }
 
   return "Something went wrong";
+}
+
+function treeContainsPath(node: FileSystemSnapshot["tree"], path: string): boolean {
+  if (node.path === path) {
+    return true;
+  }
+
+  return node.children?.some((child) => treeContainsPath(child, path)) ?? false;
 }

@@ -29,6 +29,7 @@ export type FilesystemCommand =
   | { command: "cd"; payload: { path: string } }
   | { command: "mkdir"; payload: { path: string; recursive?: boolean } }
   | { command: "rmdir"; payload: { path: string } }
+  | { command: "deleteFile"; payload: { path: string } }
   | { command: "touch"; payload: { path: string } }
   | { command: "writeFile"; payload: { path: string; content: string } }
   | { command: "readFile"; payload: { path: string } }

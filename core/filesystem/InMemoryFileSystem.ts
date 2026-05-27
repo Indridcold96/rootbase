@@ -122,6 +122,16 @@ export class InMemoryFileSystem {
     return node.content;
   }
 
+  deleteFile(path: string): void {
+    const node = this.paths.resolve(path);
+
+    if (node.type !== "file") {
+      throw new NotAFileError(`Path is not a file: ${path}`);
+    }
+
+    this.removeFromParent(node);
+  }
+
   move(sourcePath: string, targetPath: string): void {
     const source = this.paths.resolve(sourcePath);
     if (source === this.root) {

@@ -43,6 +43,9 @@ export function executeFilesystemCommand(command: FilesystemCommand): Filesystem
     case "rmdir":
       filesystem.rmdir(command.payload.path);
       return { snapshot: getSnapshot() };
+    case "deleteFile":
+      filesystem.deleteFile(command.payload.path);
+      return { snapshot: getSnapshot() };
     case "touch":
       filesystem.touch(command.payload.path);
       return { snapshot: getSnapshot() };
