@@ -1,36 +1,255 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rootbase
+
+An in-memory filesystem explorer built with TypeScript and Next.js.
+
+## Overview
+
+Rootbase is an in-memory filesystem implementation for files and directories. The filesystem core is a framework-agnostic TypeScript library, and the CLI plus browser explorer are adapters over that same core.
+
+Virtual filesystem operations do not use the real disk filesystem. All state lives in memory and resets when the owning process restarts.
+
+The browser explorer is an extension over the core filesystem, not the source of filesystem behavior.
+
+## Features
+
+- Directories and files
+- Current working directory
+- Absolute and relative paths
+- `.` and `..`
+- Create/remove directories
+- Create/delete files
+- Read/write file contents
+- Move/rename/copy files and directories
+- Recursive find by exact name
+- Tree walking
+- Demo script
+- Interactive CLI
+- Browser file explorer
+- Backend API with Zod validation
+- In-memory server-side state
+
+## Architecture
+
+`core/filesystem` contains the pure TypeScript filesystem implementation. It does not import Next.js, React, Node `fs`, browser APIs, persistence, or API route code.
+
+`cli` is an interactive command-line adapter over the core. It owns its own in-memory filesystem instance for the lifetime of the CLI process.
+
+`server/filesystem` is the backend adapter over the core. It owns a singleton in-memory filesystem instance, validates API commands with Zod, builds snapshots, and maps errors into API responses.
+
+`web/filesystem` contains frontend API helpers and small UI-only path composition helpers.
+
+`components` contains both generated shadcn/ui primitives under `components/ui` and Rootbase-specific browser explorer components under `components/screens` and `components/file-explorer`. React components do not import or instantiate the filesystem core.
+
+`app/api/fs` is a thin Next.js route that delegates to `server/filesystem`.
+
+`app/page.tsx` is a thin page that renders the Rootbase explorer screen.
+
+## Project Structure
+
+```text
+core/filesystem/        # framework-agnostic filesystem core
+cli/                    # interactive CLI adapter
+scripts/                # demo scripts
+server/filesystem/      # backend adapter, Zod schemas, service, error mapping
+web/filesystem/         # frontend API client and UI helpers
+components/             # shadcn/ui primitives and Rootbase browser explorer components
+app/                    # Next.js app routes, layout, and thin explorer page
+app/api/fs/             # Next.js API route
+tests/                  # unit tests
+```
 
 ## Getting Started
 
-First, run the development server:
+```bash
+npm install
+```
+
+## Available Commands
+
+```bash
+npm test
+```
+
+Runs the Vitest test suite.
+
+```bash
+npm run test:watch
+```
+
+Runs Vitest in watch mode.
+
+```bash
+npm run demo:core
+```
+
+Runs the scripted filesystem demo against the real `InMemoryFileSystem`.
+
+```bash
+npm run cli
+```
+
+Starts the interactive CLI.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Starts the Next.js browser explorer at `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Builds the Next.js app.
 
-## Learn More
+```bash
+npm run lint
+```
 
-To learn more about Next.js, take a look at the following resources:
+Runs ESLint.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Running the Core Demo
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run demo:core
+```
 
-## Deploy on Vercel
+The demo runs a scripted sequence against the real `InMemoryFileSystem`, prints directory listings, reads a file, and prints the final virtual filesystem tree.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+It does not create real folders or files on disk.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Running the CLI
+
+```bash
+npm run cli
+```
+
+Supported commands:
+
+- `help`
+- `pwd`
+- `ls [path]`
+- `cd <path>`
+- `mkdir <path> [--recursive]`
+- `rmdir <path>`
+- `touch <path>`
+- `rm <path>`
+- `write <path> <content...>`
+- `read <path>`
+- `mv <source> <target>`
+- `cp <source> <target>`
+- `find <name> [startPath]`
+- `tree [path]`
+- `clear`
+- `exit` / `quit`
+
+Example session:
+
+```text
+mkdir school
+cd school
+mkdir homework
+cd homework
+touch notes.txt
+write notes.txt hello from rootbase
+read notes.txt
+tree /
+exit
+```
+
+## Running the Browser Explorer
+
+```bash
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+The browser explorer calls `/api/fs`. The backend wraps the in-memory core and is the source of truth for filesystem state. Browser refreshes fetch the current backend snapshot; the browser does not hold filesystem state as the source of truth.
+
+Restarting the dev server resets the filesystem state.
+
+## API Summary
+
+### `GET /api/fs`
+
+Returns a filesystem snapshot:
+
+- `cwd`
+- `tree`
+- `entries`
+
+### `POST /api/fs`
+
+Accepts command payloads:
+
+- `cd`
+- `mkdir`
+- `rmdir`
+- `touch`
+- `deleteFile`
+- `writeFile`
+- `readFile`
+- `move`
+- `copy`
+- `find`
+- `clear`
+
+Example:
+
+```json
+{
+  "command": "mkdir",
+  "payload": {
+    "path": "/school/homework",
+    "recursive": true
+  }
+}
+```
+
+## Design Decisions
+
+Rootbase is in-memory only by design. It is intended to demonstrate filesystem behavior without persistence or disk writes.
+
+The core is a framework-agnostic TypeScript library. This keeps filesystem behavior independent from Next.js, React, CLI code, API routes, and browser state.
+
+Directories use `Map<string, FileSystemNode>` for children, which keeps child lookup simple and efficient.
+
+Directory listings and search results are sorted deterministically so tests, demos, CLI output, and UI rendering remain stable.
+
+The core uses explicit custom errors for invalid filesystem operations. Adapters catch those errors and present readable messages.
+
+The CLI and web layers are thin adapters. They call the core or backend service instead of duplicating filesystem behavior.
+
+Zod validation lives at the API boundary, not in the core.
+
+The browser is not the source of truth. It fetches snapshots and sends commands to the backend API, which wraps the in-memory filesystem instance.
+
+## Limitations
+
+- No persistence
+- No real disk writes
+- No permissions or users
+- No symlinks or hardlinks
+- No file streaming
+- State resets on process restart
+- The in-memory singleton is appropriate for local and take-home usage, not distributed deployment
+
+## Testing
+
+The test suite covers:
+
+- Core filesystem behavior
+- CLI parser and command handlers
+- Server filesystem service helpers
+- Web path helper functions
+
+Run all tests with:
+
+```bash
+npm test
+```
