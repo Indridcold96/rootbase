@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { FileSystemNodeType } from "@/web/filesystem/types";
+
+export interface SelectedItem {
+  path: string;
+  type: FileSystemNodeType;
+}
 
 interface FileActionsPanelProps {
   pending: boolean;
+  selectedItem?: SelectedItem;
   onMkdir: (path: string, recursive: boolean) => void;
   onTouch: (path: string) => void;
   onRmdir: (path: string) => void;
@@ -20,6 +28,7 @@ interface FileActionsPanelProps {
 
 export function FileActionsPanel({
   pending,
+  selectedItem,
   onMkdir,
   onTouch,
   onRmdir,
@@ -32,13 +41,13 @@ export function FileActionsPanel({
   const [mkdirPath, setMkdirPath] = useState("");
   const [recursive, setRecursive] = useState(false);
   const [filePath, setFilePath] = useState("");
-  const [removePath, setRemovePath] = useState("");
-  const [removeFilePath, setRemoveFilePath] = useState("");
-  const [renameSource, setRenameSource] = useState("");
+  const [removePath, setRemovePath] = useState(selectedItem?.type === "directory" ? selectedItem.path : "");
+  const [removeFilePath, setRemoveFilePath] = useState(selectedItem?.type === "file" ? selectedItem.path : "");
+  const [renameSource, setRenameSource] = useState(selectedItem?.path ?? "");
   const [renameName, setRenameName] = useState("");
-  const [moveSource, setMoveSource] = useState("");
+  const [moveSource, setMoveSource] = useState(selectedItem?.path ?? "");
   const [moveDestination, setMoveDestination] = useState("");
-  const [copySource, setCopySource] = useState("");
+  const [copySource, setCopySource] = useState(selectedItem?.path ?? "");
   const [copyDestination, setCopyDestination] = useState("");
   const [findName, setFindName] = useState("");
   const [findStart, setFindStart] = useState("");
@@ -46,7 +55,18 @@ export function FileActionsPanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Actions</CardTitle>
+        <div className="flex flex-col gap-2">
+          <CardTitle>Actions</CardTitle>
+          {selectedItem ? (
+            <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+              <span>Selected:</span>
+              <span className="min-w-0 truncate font-mono">{selectedItem.path}</span>
+              <Badge variant="secondary">{selectedItem.type}</Badge>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">Select an item to prefill file actions.</p>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <form

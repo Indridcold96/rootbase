@@ -9,13 +9,20 @@ import { FileViewer } from "@/components/file-explorer/FileViewer";
 import { FindResults } from "@/components/file-explorer/FindResults";
 import { executeFilesystemCommand, getFilesystemSnapshot } from "@/web/filesystem/api";
 import { getBaseName, getParentPath, joinUiPath, resolveUiPath } from "@/web/filesystem/pathHelpers";
-import type { FileSystemSnapshot, FilesystemCommand, SearchResult } from "@/web/filesystem/types";
+import type { FileSystemNodeType, FileSystemSnapshot, FilesystemCommand, SearchResult } from "@/web/filesystem/types";
+
+interface SelectedItem {
+  path: string;
+  type: FileSystemNodeType;
+}
 
 export function RootbaseExplorerScreen() {
   const [snapshot, setSnapshot] = useState<FileSystemSnapshot | null>(null);
+  const [selectedItem, setSelectedItem] = useState<SelectedItem>();
   const [selectedFilePath, setSelectedFilePath] = useState<string>();
   const [fileContent, setFileContent] = useState("");
   const [findResults, setFindResults] = useState<SearchResult[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string>();
@@ -79,6 +86,7 @@ export function RootbaseExplorerScreen() {
 
   const selectDirectory = useCallback(
     async (path: string) => {
+      setSelectedItem({ path, type: "directory" });
       const result = await runCommand({ command: "cd", payload: { path } });
       if (result) {
         setSelectedFilePath(undefined);
@@ -90,6 +98,7 @@ export function RootbaseExplorerScreen() {
 
   const selectFile = useCallback(
     async (path: string) => {
+      setSelectedItem({ path, type: "file" });
       const result = await runCommand({ command: "readFile", payload: { path } });
       if (result?.fileContent !== undefined) {
         setSelectedFilePath(path);
@@ -99,12 +108,22 @@ export function RootbaseExplorerScreen() {
     [runCommand],
   );
 
+  const goToParent = useCallback(async () => {
+    const result = await runCommand({ command: "cd", payload: { path: ".." } });
+    if (result) {
+      setSelectedItem(undefined);
+      setSelectedFilePath(undefined);
+      setFileContent("");
+    }
+  }, [runCommand]);
+
   const mutate = useCallback(
     async (command: FilesystemCommand) => {
       const result = await runCommand(command);
       if (result) {
         setFindResults([]);
         if (selectedFilePath && !treeContainsPath(result.snapshot.tree, selectedFilePath)) {
+          setSelectedItem(undefined);
           setSelectedFilePath(undefined);
           setFileContent("");
         }
@@ -184,6 +203,7 @@ export function RootbaseExplorerScreen() {
       if (result) {
         setFindResults([]);
         if (selectedFilePath && !treeContainsPath(result.snapshot.tree, selectedFilePath)) {
+          setSelectedItem(undefined);
           setSelectedFilePath(undefined);
           setFileContent("");
         }
@@ -196,8 +216,21 @@ export function RootbaseExplorerScreen() {
     const result = await runCommand({ command: "clear" });
     if (result) {
       setSelectedFilePath(undefined);
+      setSelectedItem(undefined);
       setFileContent("");
       setFindResults([]);
+      setHasSearched(false);
+    }
+  }, [runCommand]);
+
+  const seedExample = useCallback(async () => {
+    const result = await runCommand({ command: "seedExample" });
+    if (result) {
+      setSelectedItem(undefined);
+      setSelectedFilePath(undefined);
+      setFileContent("");
+      setFindResults([]);
+      setHasSearched(false);
     }
   }, [runCommand]);
 
@@ -209,6 +242,7 @@ export function RootbaseExplorerScreen() {
         error={error}
         onRefresh={loadSnapshot}
         onReset={reset}
+        onSeedExample={seedExample}
         tree={<PanelLoading label="Filesystem" />}
         entries={<PanelLoading label="Directory" />}
         actions={<PanelLoading label="Actions" />}
@@ -225,6 +259,7 @@ export function RootbaseExplorerScreen() {
       error={error}
       onRefresh={loadSnapshot}
       onReset={reset}
+      onSeedExample={seedExample}
       tree={
         <FileTree
           tree={snapshot.tree}
@@ -239,14 +274,16 @@ export function RootbaseExplorerScreen() {
           cwd={snapshot.cwd}
           entries={snapshot.entries}
           selectedFilePath={selectedFilePath}
-          onParent={() => void selectDirectory("..")}
+          onParent={() => void goToParent()}
           onDirectorySelect={selectDirectory}
           onFileSelect={selectFile}
         />
       }
       actions={
         <FileActionsPanel
+          key={selectedItem ? `${selectedItem.type}:${selectedItem.path}` : "no-selection"}
           pending={pending}
+          selectedItem={selectedItem}
           onMkdir={(path, recursive) => void mutate({ command: "mkdir", payload: { path, recursive } })}
           onTouch={(path) => void mutate({ command: "touch", payload: { path } })}
           onRmdir={(path) => void mutate({ command: "rmdir", payload: { path } })}
@@ -260,6 +297,7 @@ export function RootbaseExplorerScreen() {
           }
           onFind={(name, startPath) => {
             void runCommand({ command: "find", payload: { name, startPath } }).then((result) => {
+              setHasSearched(true);
               if (result?.results) {
                 setFindResults(result.results);
               }
@@ -286,7 +324,12 @@ export function RootbaseExplorerScreen() {
         />
       }
       results={
-        <FindResults results={findResults} onDirectorySelect={selectDirectory} onFileSelect={selectFile} />
+        <FindResults
+          results={findResults}
+          hasSearched={hasSearched}
+          onDirectorySelect={selectDirectory}
+          onFileSelect={selectFile}
+        />
       }
     />
   );

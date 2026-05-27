@@ -38,7 +38,12 @@ export function DirectoryEntries({
         <div className="mb-3 rounded-lg bg-muted px-3 py-2 font-mono text-sm">{cwd}</div>
         <ScrollArea className="h-[470px] pr-3">
           {entries.length === 0 ? (
-            <p className="text-sm text-muted-foreground">(empty)</p>
+            <div className="rounded-lg border border-dashed bg-muted/40 p-4">
+              <p className="text-sm font-medium">This directory is empty.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Create a file or directory from the actions panel.
+              </p>
+            </div>
           ) : (
             <div className="divide-y">
               {entries.map((entry) => {

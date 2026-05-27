@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { executeFilesystemCommand, getSnapshot } from "../../server/filesystem/filesystemService";
+import { filesystemCommandSchema } from "../../server/filesystem/filesystemSchemas";
 
 describe("filesystemService", () => {
   beforeEach(() => {
@@ -69,5 +70,49 @@ describe("filesystemService", () => {
 
     expect(result.snapshot.entries).toEqual([]);
     expect(result.snapshot.tree.children).toEqual([]);
+  });
+
+  it("accepts the seedExample command schema", () => {
+    expect(() => filesystemCommandSchema.parse({ command: "seedExample", payload: {} })).not.toThrow();
+    expect(() => filesystemCommandSchema.parse({ command: "seedExample" })).not.toThrow();
+  });
+
+  it("seeds a deterministic sample filesystem", () => {
+    const result = executeFilesystemCommand({ command: "seedExample" });
+
+    expect(result.snapshot.cwd).toBe("/");
+    expect(result.snapshot.entries.map((entry) => entry.path)).toEqual(["/archive", "/notes", "/school"]);
+    expect(result.snapshot.tree.children).toEqual([
+      {
+        name: "archive",
+        type: "directory",
+        path: "/archive",
+        children: [],
+      },
+      {
+        name: "notes",
+        type: "directory",
+        path: "/notes",
+        children: [{ name: "take-home.txt", type: "file", path: "/notes/take-home.txt" }],
+      },
+      {
+        name: "school",
+        type: "directory",
+        path: "/school",
+        children: [
+          {
+            name: "homework",
+            type: "directory",
+            path: "/school/homework",
+            children: [
+              { name: "history", type: "directory", path: "/school/homework/history", children: [] },
+              { name: "math", type: "directory", path: "/school/homework/math", children: [] },
+              { name: "notes.txt", type: "file", path: "/school/homework/notes.txt" },
+              { name: "spanish", type: "directory", path: "/school/homework/spanish", children: [] },
+            ],
+          },
+        ],
+      },
+    ]);
   });
 });

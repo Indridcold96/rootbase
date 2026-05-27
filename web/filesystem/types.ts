@@ -36,7 +36,8 @@ export type FilesystemCommand =
   | { command: "move"; payload: { sourcePath: string; targetPath: string } }
   | { command: "copy"; payload: { sourcePath: string; targetPath: string } }
   | { command: "find"; payload: { name: string; startPath?: string } }
-  | { command: "clear"; payload?: Record<string, never> };
+  | { command: "clear"; payload?: Record<string, never> }
+  | { command: "seedExample"; payload?: Record<string, never> };
 
 export type FilesystemCommandResult =
   | { snapshot: FileSystemSnapshot; fileContent?: never; results?: never }

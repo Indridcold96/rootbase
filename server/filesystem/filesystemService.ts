@@ -77,6 +77,15 @@ export function executeFilesystemCommand(command: FilesystemCommand): Filesystem
           entries: filesystem.ls(),
         },
       };
+    case "seedExample":
+      filesystem = seedExampleFilesystem();
+      return {
+        snapshot: {
+          cwd: filesystem.pwd(),
+          tree: buildTree("/"),
+          entries: filesystem.ls(),
+        },
+      };
   }
 }
 
@@ -103,4 +112,20 @@ function buildTreeFromEntry(entry: DirectoryEntry): TreeNode {
   }
 
   return buildTree(entry.path);
+}
+
+function seedExampleFilesystem() {
+  const filesystem = resetFilesystem();
+
+  filesystem.mkdir("/school/homework/math", { recursive: true });
+  filesystem.mkdir("/school/homework/history", { recursive: true });
+  filesystem.mkdir("/school/homework/spanish", { recursive: true });
+  filesystem.touch("/school/homework/notes.txt");
+  filesystem.writeFile("/school/homework/notes.txt", "Homework notes stored in Rootbase.");
+  filesystem.mkdir("/notes");
+  filesystem.touch("/notes/take-home.txt");
+  filesystem.writeFile("/notes/take-home.txt", "Rootbase stores this file in memory only.");
+  filesystem.mkdir("/archive");
+
+  return filesystem;
 }

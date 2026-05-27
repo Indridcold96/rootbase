@@ -47,6 +47,10 @@ export const filesystemCommandSchema = z.discriminatedUnion("command", [
     command: z.literal("clear"),
     payload: z.object({}).optional(),
   }),
+  z.object({
+    command: z.literal("seedExample"),
+    payload: z.object({}).optional(),
+  }),
 ]);
 
 export type FilesystemCommand = z.infer<typeof filesystemCommandSchema>;

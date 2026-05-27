@@ -6,19 +6,24 @@ import type { SearchResult } from "@/web/filesystem/types";
 
 interface FindResultsProps {
   results: SearchResult[];
+  hasSearched: boolean;
   onDirectorySelect: (path: string) => void;
   onFileSelect: (path: string) => void;
 }
 
-export function FindResults({ results, onDirectorySelect, onFileSelect }: FindResultsProps) {
+export function FindResults({ results, hasSearched, onDirectorySelect, onFileSelect }: FindResultsProps) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Find results</CardTitle>
       </CardHeader>
       <CardContent>
-        {results.length === 0 ? (
-          <p className="text-sm text-muted-foreground">(empty)</p>
+        {!hasSearched ? (
+          <p className="text-sm text-muted-foreground">Search by exact name to show matches here.</p>
+        ) : results.length === 0 ? (
+          <div className="rounded-lg border border-dashed bg-muted/40 p-4 text-sm text-muted-foreground">
+            No matching files or directories found.
+          </div>
         ) : (
           <div className="divide-y">
             {results.map((result) => {

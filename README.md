@@ -25,6 +25,8 @@ The browser explorer is an extension over the core filesystem, not the source of
 - Demo script
 - Interactive CLI
 - Browser file explorer
+- Browser theme toggle
+- Sample filesystem loader
 - Backend API with Zod validation
 - In-memory server-side state
 
@@ -171,6 +173,8 @@ http://localhost:3000
 
 The browser explorer calls `/api/fs`. The backend wraps the in-memory core and is the source of truth for filesystem state. Browser refreshes fetch the current backend snapshot; the browser does not hold filesystem state as the source of truth.
 
+The explorer includes a light/dark/system theme toggle and a reset-with-sample action for quickly loading a deterministic demo filesystem.
+
 Restarting the dev server resets the filesystem state.
 
 ## API Summary
@@ -198,6 +202,7 @@ Accepts command payloads:
 - `copy`
 - `find`
 - `clear`
+- `seedExample`
 
 Example:
 
